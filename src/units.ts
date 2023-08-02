@@ -1,4 +1,5 @@
 import {
+  AbstractMesh,
   Mesh,
   MeshBuilder,
   SceneLoader,
@@ -47,9 +48,14 @@ export const addUnit = async ({
 };
 
 export const removeUnit = ({ id }: { id: string }) => {
-  const { scene } = gameContext();
+  const { scene, explosionSystem } = gameContext();
   const mesh = scene.getMeshByName(id);
   if (mesh) {
+    const node = new AbstractMesh("boom", scene);
+    node.position = mesh.position.clone();
+    explosionSystem.emitter = node;
+    explosionSystem.start();
+
     mesh.dispose();
   }
 };

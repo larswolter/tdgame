@@ -11,6 +11,8 @@ import {
   Color3,
   Mesh,
   Vector2,
+  ParticleHelper,
+  IParticleSystem,
 } from "@babylonjs/core";
 import { getScene, setScene } from "./state";
 import { setupCameraControls } from "./controls";
@@ -22,6 +24,7 @@ import { GameState } from "./serialization";
 
 let shadowGenerator: ShadowGenerator;
 let hoveringPick: PickingInfo | null;
+let explosionSystem: IParticleSystem;
 
 export const gameContext = () => {
   return {
@@ -29,6 +32,7 @@ export const gameContext = () => {
     shadowGenerator,
     scene: getScene(),
     canvas: canvas,
+    explosionSystem
   };
 };
 
@@ -75,6 +79,15 @@ export const setupGame = async ({
   shadowGenerator.darkness = 0.5;
   shadowGenerator.useExponentialShadowMap = true;
   shadowGenerator.usePercentageCloserFiltering = true;
+  ParticleHelper.ParseFromFileAsync(
+    "explosion",
+    "particles/explosion.json",
+    scene,
+  ).then((system) => {
+    explosionSystem = system;
+    explosionSystem.updateSpeed = 0.5;
+  });
+
   setupTerrain({ scene, grid: gameState.grid });
   setupCameraControls({
     scene,
