@@ -35,8 +35,13 @@ window.addEventListener("keydown", (ev) => {
 
 // run the main render loop
 let lastTime = 0;
-const gameLoop = () => {
-  requestAnimationFrame(gameLoop);
+
+//resize if the screen is resized/rotated
+window.addEventListener("resize", () => {
+  engine.resize();
+});
+
+engine.runRenderLoop(()=>{
   const curTime = performance.now();
   const delta = lastTime ? (curTime - lastTime) * 0.001 : 0.02;
   lastTime = curTime;
@@ -45,10 +50,4 @@ const gameLoop = () => {
   updateShots({ delta });
   const scene = getScene();
   if (scene) scene.render();
-};
-
-//resize if the screen is resized/rotated
-window.addEventListener("resize", () => {
-  engine.resize();
 });
-gameLoop();

@@ -8,7 +8,7 @@ import {
   float,
 } from "@babylonjs/core";
 import { gameClick, setGameHover } from "./game";
-
+let prevRadius = 10;
 export const setupCameraControls = ({
   scene,
   canvas,
@@ -20,24 +20,53 @@ export const setupCameraControls = ({
 }) => {
   const camera = new ArcRotateCamera(
     "cameraGame",
-    1.5,
+    Math.PI / 2,
     1,
     10,
     new Vector3(0, 0, 0),
     scene,
   );
-
-  camera.lowerRadiusLimit = 5;
+  camera.zoomToMouseLocation = false;
+  camera.lowerRadiusLimit = 3;
+  //  camera.upperAlphaLimit = Math.PI/2;
+  //  camera.lowerAlphaLimit = Math.PI/2;
   camera.upperBetaLimit = 1;
-  camera.upperRadiusLimit = 50;
+  camera.upperRadiusLimit = 10;
   camera.keysLeft = [81];
   camera.keysRight = [69];
   camera.keysUp = [82];
   camera.keysDown = [70];
+  camera.wheelPrecision = 0.01;
 
   camera.attachControl(canvas, true);
   camera.setTarget(Vector3.Zero());
+  scene.beforeRender = () => {
+    let ratio = 1;
+    if (prevRadius != camera.radius) {
+      ratio = prevRadius / camera.radius;
+      prevRadius = camera.radius;
+
+      camera.panningSensibility *= ratio;
+      camera.wheelPrecision *= ratio;
+      console.log(camera.wheelPrecision);
+    }
+  };
   scene.actionManager = new ActionManager(scene);
+
+  scene.actionManager.registerAction(
+    new ExecuteCodeAction(
+      {
+        trigger: ActionManager.OnKeyDownTrigger,
+        parameter: "v",
+      },
+      function () {
+        camera.setTarget(Vector3.Zero());
+        camera.beta = 0;
+        camera.alpha = Math.PI / 2;
+        camera.radius = 10;
+      },
+    ),
+  );
 
   scene.actionManager.registerAction(
     new ExecuteCodeAction(
@@ -112,22 +141,22 @@ export const setupCameraControls = ({
   );
   scene.onPointerObservable.add((pointerInfo) => {
     switch (pointerInfo.type) {
-    case PointerEventTypes.POINTERMOVE: {
-      const pick = scene.pick(
-        scene.pointerX,
-        scene.pointerY,
-        undefined,
-        true,
-      );
-      if (pick.hit) {
-        setGameHover(pick);
-      } else setGameHover(null);
+      case PointerEventTypes.POINTERMOVE: {
+        const pick = scene.pick(
+          scene.pointerX,
+          scene.pointerY,
+          undefined,
+          true,
+        );
+        if (pick.hit) {
+          setGameHover(pick);
+        } else setGameHover(null);
 
-      break;
-    }
-    case PointerEventTypes.POINTERTAP:
-      gameClick();
-      break;
+        break;
+      }
+      case PointerEventTypes.POINTERTAP:
+        gameClick();
+        break;
     }
   });
 };

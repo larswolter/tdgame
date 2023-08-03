@@ -85,7 +85,6 @@ export const setupGame = async ({
     scene,
   ).then((system) => {
     explosionSystem = system;
-    explosionSystem.updateSpeed = 0.5;
   });
 
   setupTerrain({ scene, grid: gameState.grid });
